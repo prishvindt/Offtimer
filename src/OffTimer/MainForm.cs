@@ -14,6 +14,7 @@ internal sealed class MainForm : Form
     private readonly Button _overlayButton = new();
     private readonly Button _settingsButton = new();
     private readonly Label _statusLabel = new();
+    private readonly Label _minutesLabel = new();
     private bool _exitRequested;
 
     public MainForm(
@@ -35,7 +36,11 @@ internal sealed class MainForm : Form
         FormBorderStyle = FormBorderStyle.FixedSingle;
         MaximizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
-        ClientSize = new Size(330, 205);
+        AutoScaleMode = AutoScaleMode.Dpi;
+        AutoSize = true;
+        AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        Padding = new Padding(16);
+        MinimumSize = new Size(380, 0);
 
         BuildUi();
         _notifyIcon = CreateNotifyIcon();
@@ -55,18 +60,35 @@ internal sealed class MainForm : Form
 
     private void BuildUi()
     {
-        var minutesLabel = new Label
+        var root = new TableLayoutPanel
         {
-            Left = 16,
-            Top = 19,
-            Width = 80
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 1,
+            RowCount = 4,
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
         };
-        minutesLabel.Name = "minutesLabel";
-        Controls.Add(minutesLabel);
+        Controls.Add(root);
 
-        _minutesTextBox.Left = 95;
-        _minutesTextBox.Top = 16;
-        _minutesTextBox.Width = 90;
+        var inputRow = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        root.Controls.Add(inputRow, 0, 0);
+
+        _minutesLabel.AutoSize = true;
+        _minutesLabel.Margin = new Padding(0, 7, 8, 0);
+        inputRow.Controls.Add(_minutesLabel);
+
+        _minutesTextBox.Width = ScaleByDpi(96);
+        _minutesTextBox.Margin = new Padding(0, 3, 8, 0);
         _minutesTextBox.Text = "60";
         _minutesTextBox.KeyDown += (_, e) =>
         {
@@ -77,58 +99,66 @@ internal sealed class MainForm : Form
                 e.SuppressKeyPress = true;
             }
         };
-        Controls.Add(_minutesTextBox);
+        inputRow.Controls.Add(_minutesTextBox);
 
-        _okButton.Left = 195;
-        _okButton.Top = 15;
-        _okButton.Width = 50;
-        _okButton.Height = 25;
+        ConfigureButton(_okButton, new Size(64, 30));
+        _okButton.Margin = new Padding(0, 0, 8, 0);
         _okButton.Click += (_, _) => StartFromTextBox();
-        Controls.Add(_okButton);
+        inputRow.Controls.Add(_okButton);
 
-        _settingsButton.Left = 255;
-        _settingsButton.Top = 15;
-        _settingsButton.Width = 34;
-        _settingsButton.Height = 25;
+        ConfigureButton(_settingsButton, new Size(36, 30));
+        _settingsButton.AutoSize = false;
         _settingsButton.Text = "⚙";
+        _settingsButton.Margin = Padding.Empty;
         _settingsButton.Click += (_, _) => OpenSettings();
-        Controls.Add(_settingsButton);
+        inputRow.Controls.Add(_settingsButton);
+
+        var quickRow = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = new Padding(0, 16, 0, 0),
+            Padding = Padding.Empty
+        };
+        root.Controls.Add(quickRow, 0, 1);
 
         var quickValues = new[] { 30, 45, 60, 90 };
-        for (var i = 0; i < quickValues.Length; i++)
+        foreach (var value in quickValues)
         {
-            var value = quickValues[i];
-            var button = new Button
-            {
-                Text = value.ToString(),
-                Left = 16 + i * 74,
-                Top = 58,
-                Width = 64,
-                Height = 30
-            };
+            var button = new Button { Text = value.ToString() };
+            ConfigureButton(button, new Size(72, 34));
+            button.Margin = new Padding(0, 0, 8, 0);
             button.Click += (_, _) => StartTimer(value);
-            Controls.Add(button);
+            quickRow.Controls.Add(button);
         }
 
-        _overlayButton.Left = 16;
-        _overlayButton.Top = 105;
-        _overlayButton.Width = 135;
-        _overlayButton.Height = 30;
+        var actionsRow = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = new Padding(0, 16, 0, 0),
+            Padding = Padding.Empty
+        };
+        root.Controls.Add(actionsRow, 0, 2);
+
+        ConfigureButton(_overlayButton, new Size(140, 34));
+        _overlayButton.Margin = new Padding(0, 0, 8, 0);
         _overlayButton.Click += (_, _) => ToggleOverlay();
-        Controls.Add(_overlayButton);
+        actionsRow.Controls.Add(_overlayButton);
 
-        _cancelButton.Left = 161;
-        _cancelButton.Top = 105;
-        _cancelButton.Width = 135;
-        _cancelButton.Height = 30;
+        ConfigureButton(_cancelButton, new Size(140, 34));
+        _cancelButton.Margin = Padding.Empty;
         _cancelButton.Click += (_, _) => CancelTimer();
-        Controls.Add(_cancelButton);
+        actionsRow.Controls.Add(_cancelButton);
 
-        _statusLabel.Left = 16;
-        _statusLabel.Top = 155;
-        _statusLabel.Width = 285;
-        _statusLabel.Height = 35;
-        Controls.Add(_statusLabel);
+        _statusLabel.AutoSize = true;
+        _statusLabel.MaximumSize = new Size(520, 0);
+        _statusLabel.Margin = new Padding(0, 18, 0, 0);
+        root.Controls.Add(_statusLabel, 0, 3);
     }
 
     private NotifyIcon CreateNotifyIcon()
@@ -154,17 +184,14 @@ internal sealed class MainForm : Form
     private void ApplyLocalization()
     {
         Text = _localizer.T("app_title");
-        if (Controls.Find("minutesLabel", false).FirstOrDefault() is Label minutesLabel)
-        {
-            minutesLabel.Text = _localizer.T("minutes");
-        }
-
+        _minutesLabel.Text = _localizer.T("minutes");
         _okButton.Text = _localizer.T("ok");
         _cancelButton.Text = _localizer.T("cancel_timer");
         _settingsButton.AccessibleName = _localizer.T("settings");
         UpdateOverlayButtonText();
         RebuildTrayMenu();
         UpdateStateText();
+        PerformLayout();
     }
 
     private void RebuildTrayMenu()
@@ -325,5 +352,20 @@ internal sealed class MainForm : Form
         _notifyIcon.Dispose();
         _overlay.Dispose();
         base.OnFormClosing(e);
+    }
+
+    private static void ConfigureButton(Button button, Size minimumSize)
+    {
+        button.AutoSize = true;
+        button.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        button.MinimumSize = minimumSize;
+        button.Padding = new Padding(8, 3, 8, 3);
+        button.TextAlign = ContentAlignment.MiddleCenter;
+        button.UseVisualStyleBackColor = true;
+    }
+
+    private int ScaleByDpi(int value)
+    {
+        return (int)Math.Round(value * DeviceDpi / 96.0);
     }
 }
