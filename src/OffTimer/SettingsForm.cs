@@ -24,7 +24,11 @@ internal sealed class SettingsForm : Form
         MinimizeBox = false;
         ShowIcon = false;
         StartPosition = FormStartPosition.CenterParent;
-        ClientSize = new Size(390, 350);
+        AutoScaleMode = AutoScaleMode.Dpi;
+        AutoSize = true;
+        AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        Padding = new Padding(16);
+        MinimumSize = new Size(470, 0);
 
         BuildUi(settingsPath);
         LoadValues();
@@ -32,124 +36,78 @@ internal sealed class SettingsForm : Form
 
     private void BuildUi(string settingsPath)
     {
-        var labelWidth = 130;
-        var inputLeft = 165;
-        var top = 18;
-        var row = 38;
-
-        Controls.Add(new Label
+        var root = new TableLayoutPanel
         {
-            Text = _localizer.T("language"),
-            Left = 16,
-            Top = top + 4,
-            Width = labelWidth
-        });
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            ColumnCount = 2,
+            Dock = DockStyle.Fill,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty
+        };
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        root.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        Controls.Add(root);
 
-        _languageCombo.Left = inputLeft;
-        _languageCombo.Top = top;
-        _languageCombo.Width = 190;
+        var row = 0;
+        AddLabeledControl(root, row++, _localizer.T("language"), _languageCombo);
         _languageCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+        _languageCombo.Width = 230;
         _languageCombo.Items.Add(new ComboItem(_localizer.T("language_auto"), "auto"));
         _languageCombo.Items.Add(new ComboItem(_localizer.T("language_ru"), "ru"));
         _languageCombo.Items.Add(new ComboItem(_localizer.T("language_en"), "en"));
-        Controls.Add(_languageCombo);
 
-        top += row;
-        _overlayEnabledCheck.Text = _localizer.T("overlay_enabled");
-        _overlayEnabledCheck.Left = 16;
-        _overlayEnabledCheck.Top = top;
-        _overlayEnabledCheck.Width = 340;
-        Controls.Add(_overlayEnabledCheck);
+        ConfigureCheckBox(_overlayEnabledCheck, _localizer.T("overlay_enabled"));
+        AddFullWidthControl(root, row++, _overlayEnabledCheck);
 
-        top += row;
-        Controls.Add(new Label
-        {
-            Text = _localizer.T("overlay_size"),
-            Left = 16,
-            Top = top + 4,
-            Width = labelWidth
-        });
-
-        _fontSizeNumber.Left = inputLeft;
-        _fontSizeNumber.Top = top;
-        _fontSizeNumber.Width = 90;
+        AddLabeledControl(root, row++, _localizer.T("overlay_size"), _fontSizeNumber);
+        _fontSizeNumber.Width = 110;
         _fontSizeNumber.Minimum = 12;
         _fontSizeNumber.Maximum = 220;
         _fontSizeNumber.Increment = 2;
-        Controls.Add(_fontSizeNumber);
 
-        top += row;
-        Controls.Add(new Label
-        {
-            Text = _localizer.T("overlay_color"),
-            Left = 16,
-            Top = top + 4,
-            Width = labelWidth
-        });
-
-        _colorButton.Left = inputLeft;
-        _colorButton.Top = top;
-        _colorButton.Width = 90;
-        _colorButton.Height = 26;
+        AddLabeledControl(root, row++, _localizer.T("overlay_color"), _colorButton);
+        _colorButton.AutoSize = false;
+        _colorButton.Size = new Size(110, 30);
         _colorButton.Click += (_, _) => PickColor();
-        Controls.Add(_colorButton);
 
-        top += row;
-        Controls.Add(new Label
-        {
-            Text = _localizer.T("overlay_corner"),
-            Left = 16,
-            Top = top + 4,
-            Width = labelWidth
-        });
-
-        _cornerCombo.Left = inputLeft;
-        _cornerCombo.Top = top;
-        _cornerCombo.Width = 190;
+        AddLabeledControl(root, row++, _localizer.T("overlay_corner"), _cornerCombo);
         _cornerCombo.DropDownStyle = ComboBoxStyle.DropDownList;
+        _cornerCombo.Width = 230;
         _cornerCombo.Items.Add(new ComboItem(_localizer.T("corner_topleft"), "TopLeft"));
         _cornerCombo.Items.Add(new ComboItem(_localizer.T("corner_topright"), "TopRight"));
         _cornerCombo.Items.Add(new ComboItem(_localizer.T("corner_bottomleft"), "BottomLeft"));
         _cornerCombo.Items.Add(new ComboItem(_localizer.T("corner_bottomright"), "BottomRight"));
-        Controls.Add(_cornerCombo);
 
-        top += row;
-        _minimizeOnStartCheck.Text = _localizer.T("minimize_on_start");
-        _minimizeOnStartCheck.Left = 16;
-        _minimizeOnStartCheck.Top = top;
-        _minimizeOnStartCheck.Width = 340;
-        Controls.Add(_minimizeOnStartCheck);
+        ConfigureCheckBox(_minimizeOnStartCheck, _localizer.T("minimize_on_start"));
+        AddFullWidthControl(root, row++, _minimizeOnStartCheck);
 
-        top += 48;
-        Controls.Add(new Label
+        var pathLabel = new Label
         {
+            AutoSize = true,
+            MaximumSize = new Size(620, 0),
             Text = $"{_localizer.T("settings_path")}:\n{settingsPath}",
-            Left = 16,
-            Top = top,
-            Width = 350,
-            Height = 45
-        });
-
-        var saveButton = new Button
-        {
-            Text = _localizer.T("save"),
-            Left = 190,
-            Top = 310,
-            Width = 80,
-            DialogResult = DialogResult.OK
+            Margin = new Padding(0, 14, 0, 0)
         };
+        AddFullWidthControl(root, row++, pathLabel);
+
+        var buttonsRow = new FlowLayoutPanel
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = false,
+            Margin = new Padding(0, 18, 0, 0),
+            Padding = Padding.Empty
+        };
+        AddFullWidthControl(root, row, buttonsRow);
+
+        var cancelButton = CreateDialogButton(_localizer.T("cancel"), DialogResult.Cancel);
+        buttonsRow.Controls.Add(cancelButton);
+
+        var saveButton = CreateDialogButton(_localizer.T("save"), DialogResult.OK);
         saveButton.Click += (_, _) => SaveValues();
-        Controls.Add(saveButton);
-
-        var cancelButton = new Button
-        {
-            Text = _localizer.T("cancel"),
-            Left = 280,
-            Top = 310,
-            Width = 80,
-            DialogResult = DialogResult.Cancel
-        };
-        Controls.Add(cancelButton);
+        buttonsRow.Controls.Add(saveButton);
 
         AcceptButton = saveButton;
         CancelButton = cancelButton;
@@ -193,7 +151,53 @@ internal sealed class SettingsForm : Form
     private void UpdateColorButton()
     {
         _colorButton.BackColor = _selectedColor;
-        _colorButton.Text = "";
+        _colorButton.Text = string.Empty;
+    }
+
+    private static void AddLabeledControl(TableLayoutPanel root, int row, string labelText, Control control)
+    {
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+
+        var label = new Label
+        {
+            AutoSize = true,
+            Text = labelText,
+            Margin = new Padding(0, 6, 18, 10)
+        };
+        root.Controls.Add(label, 0, row);
+
+        control.Margin = new Padding(0, 0, 0, 10);
+        root.Controls.Add(control, 1, row);
+    }
+
+    private static void AddFullWidthControl(TableLayoutPanel root, int row, Control control)
+    {
+        root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        root.Controls.Add(control, 0, row);
+        root.SetColumnSpan(control, 2);
+    }
+
+    private static void ConfigureCheckBox(CheckBox checkBox, string text)
+    {
+        checkBox.AutoSize = true;
+        checkBox.MaximumSize = new Size(620, 0);
+        checkBox.Text = text;
+        checkBox.Margin = new Padding(0, 4, 0, 10);
+    }
+
+    private static Button CreateDialogButton(string text, DialogResult dialogResult)
+    {
+        return new Button
+        {
+            AutoSize = true,
+            AutoSizeMode = AutoSizeMode.GrowAndShrink,
+            MinimumSize = new Size(96, 32),
+            Padding = new Padding(10, 3, 10, 3),
+            Text = text,
+            DialogResult = dialogResult,
+            Margin = new Padding(8, 0, 0, 0),
+            UseVisualStyleBackColor = true
+        };
     }
 
     private static void SelectComboValue(ComboBox comboBox, string value)
