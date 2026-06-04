@@ -106,9 +106,13 @@ internal sealed class MainForm : Form
         _okButton.Click += (_, _) => StartFromTextBox();
         inputRow.Controls.Add(_okButton);
 
-        ConfigureButton(_settingsButton, new Size(36, 30));
+        ConfigureButton(_settingsButton, new Size(64, 30));
         _settingsButton.AutoSize = false;
+        _settingsButton.Size = new Size(ScaleByDpi(64), ScaleByDpi(30));
+        _settingsButton.Padding = Padding.Empty;
+        _settingsButton.Font = new Font("Segoe UI Symbol", 11F, FontStyle.Regular, GraphicsUnit.Point);
         _settingsButton.Text = "⚙";
+        _settingsButton.TextAlign = ContentAlignment.MiddleCenter;
         _settingsButton.Margin = Padding.Empty;
         _settingsButton.Click += (_, _) => OpenSettings();
         inputRow.Controls.Add(_settingsButton);
