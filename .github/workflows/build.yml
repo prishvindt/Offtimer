@@ -46,13 +46,8 @@ jobs:
           Copy-Item README.ru.md artifacts/OffTimer-${{ matrix.runtime }}/README.ru.md
           Copy-Item LICENSE artifacts/OffTimer-${{ matrix.runtime }}/LICENSE
 
-      - name: archive
-        shell: pwsh
-        run: |
-          Compress-Archive -Path artifacts/OffTimer-${{ matrix.runtime }}/* -DestinationPath artifacts/OffTimer-${{ matrix.runtime }}.zip -Force
-
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: OffTimer-${{ matrix.runtime }}
-          path: artifacts/OffTimer-${{ matrix.runtime }}.zip
+          path: artifacts/OffTimer-${{ matrix.runtime }}/
