@@ -1,0 +1,58 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        runtime: [ win-x64, win-x86 ]
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup .net
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: restore
+        run: dotnet restore src/OffTimer/OffTimer.csproj
+
+      - name: publish ${{ matrix.runtime }}
+        run: >
+          dotnet publish src/OffTimer/OffTimer.csproj
+          -c Release
+          -r ${{ matrix.runtime }}
+          --self-contained true
+          -o artifacts/OffTimer-${{ matrix.runtime }}
+          /p:PublishSingleFile=true
+          /p:IncludeNativeLibrariesForSelfExtract=true
+          /p:EnableCompressionInSingleFile=true
+          /p:DebugType=embedded
+
+      - name: copy docs
+        shell: pwsh
+        run: |
+          Copy-Item README.md artifacts/OffTimer-${{ matrix.runtime }}/README.md
+          Copy-Item README.ru.md artifacts/OffTimer-${{ matrix.runtime }}/README.ru.md
+          Copy-Item LICENSE artifacts/OffTimer-${{ matrix.runtime }}/LICENSE
+
+      - name: archive
+        shell: pwsh
+        run: |
+          Compress-Archive -Path artifacts/OffTimer-${{ matrix.runtime }}/* -DestinationPath artifacts/OffTimer-${{ matrix.runtime }}.zip -Force
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OffTimer-${{ matrix.runtime }}
+          path: artifacts/OffTimer-${{ matrix.runtime }}.zip

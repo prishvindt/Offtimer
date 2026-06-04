@@ -1,0 +1,27 @@
+# build output
+bin/
+obj/
+out/
+publish/
+artifacts/
+
+# visual studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# rider
+.idea/
+
+# vscode
+.vscode/
+
+# local portable settings
+src/OffTimer/offtimer/
+offtimer/settings.json
+offtimer/logs/
+
+# logs
+*.log

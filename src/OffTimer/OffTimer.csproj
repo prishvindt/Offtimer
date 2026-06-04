@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>OffTimer</AssemblyName>
+    <RootNamespace>OffTimer</RootNamespace>
+    <ApplicationIcon>assets\offtimer.ico</ApplicationIcon>
+    <Version>0.1.0</Version>
+    <Authors>Nik Pry</Authors>
+    <Description>Portable shutdown timer for Windows.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebugType>embedded</DebugType>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="assets\offtimer.ico" />
+  </ItemGroup>
+</Project>
